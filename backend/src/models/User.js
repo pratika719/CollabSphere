@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken: {
         type: String,
-        required: [true, "Refresh Token is required"],
         select: false,
 
     },
@@ -45,12 +44,6 @@ const userSchema = new mongoose.Schema({
         maxlength: [250, "Bio cannot exceed 250 characters"],
         default: "",
     },
-    role: {
-        type: String,
-        enum: ["admin", "member"],
-        default: "member",
-    },
-
 
     isActive: {
         type: Boolean,
@@ -95,13 +88,10 @@ userSchema.statics.findActiveUserById = function (userId) {
     });
 };
 
-userSchema.pre("save", function (next) {
+userSchema.pre("save", async function () {
     if (this.isModified("password")) {
         this.passwordChangedAt = Date.now();
-
     }
-    next();
-
 });
 
 const User = mongoose.model("User", userSchema);

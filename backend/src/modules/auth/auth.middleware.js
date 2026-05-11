@@ -1,34 +1,35 @@
 import jwt from "jsonwebtoken";
 
-import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-
-import * as authRepository from "../modules/auth/auth.repository.js";
+import ApiError from "../../utils/ApiError.js";
+import * as authRepository from "../auth/auth.repository.js";
 
 
-export const veifyJWT = asyncHandler(async (req, res, next) => {
-    const token = req.cookies?.accessToken || req.header("Authorization").replace("Bearer ", "");
+export const verifyJWT = async (req, res, next) => {
+
+
+    const token =
+        req.cookies?.accessToken ||
+        req.header("Authorization")?.replace("Bearer ", "");
+
+    console.log("TOKEN:", token);
+
+    console.log(
+        "ACCESS SECRET:",
+        process.env.ACCESS_TOKEN_SECRET
+    );
 
     if (!token) {
-        throw new ApiError(
-            401,
-            "Unauthorized request"
-        );
+        throw new ApiError(401, "Unauthorized request");
     }
 
-    let decodedToken
-    try {
-        decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET
+    );
 
-    } catch (error) {
-        throw new ApiError(401, "Invalid Access Token");
-    }
+    console.log("DECODED:", decodedToken);
 
-
-
-
-
-    const user = await authRepository.findUserById(decodedToken._id)
+    const user = await authRepository.findUserById(decodedToken._id);
 
     if (!user) {
         throw new ApiError(401, "Invalid Access Token");
@@ -36,12 +37,6 @@ export const veifyJWT = asyncHandler(async (req, res, next) => {
 
     req.user = user;
 
-
-
-    next()
-
-}
-
-
-)
+    return next();
+};
 

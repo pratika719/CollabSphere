@@ -1,4 +1,4 @@
-import User from "../../models/user.model.js";
+import User from "../../models/User.js";
 
 export const createUser = async (userData) => {
     const user = await User.create(userData);
@@ -14,8 +14,13 @@ export const findUserById = async (userId) => {
 }
 
 export const finduserWithpasswordByEmail = async (email) => {
-    return await User.findOne({ email })
+    return await User.findOne({ email }).select("+password");
 }
+
+export const findUserWithPasswordById = async (userId) => {
+    return await User.findById(userId).select("+password");
+}
+
 export const saveRefreshToken = async (userId, refreshToken) => {
     return await User.findByIdAndUpdate(
         userId,
@@ -71,6 +76,7 @@ export default {
     finduserByEmail,
     findUserById,
     finduserWithpasswordByEmail,
+    findUserWithPasswordById,
     saveRefreshToken,
     findUserByRefreshToken,
     removeRefreshToken,

@@ -3,9 +3,13 @@ import jwt from "jsonwebtoken";
 import * as authRepository from "./auth.repository.js";
 import ApiError from "../../utils/ApiError.js";
 
+import dotenv from "dotenv";
 
 
-const generateAccessToken = (userId) => {
+dotenv.config();
+
+
+export const generateAccessToken = (userId) => {
     return jwt.sign(
         {
             _id: userId,
@@ -18,7 +22,7 @@ const generateAccessToken = (userId) => {
     );
 };
 
-const generateRefreshToken = (userId) => {
+export const generateRefreshToken = (userId) => {
     return jwt.sign(
         {
             _id: userId,
@@ -31,7 +35,7 @@ const generateRefreshToken = (userId) => {
     );
 };
 
-const generateAuthTokens = async (userId) => {
+export const generateAuthTokens = async (userId) => {
     const accessToken = generateAccessToken(userId);
     const refreshToken = generateRefreshToken(userId);
 
@@ -41,18 +45,18 @@ const generateAuthTokens = async (userId) => {
 }
 
 
-const registerUser = async (email, password, name) => {
+export const registerUser = async (email, password, name) => {
 
 
     const existingUser = await authRepository.finduserByEmail(email);
 
     if (existingUser) {
-        throw new ApiError("User Already Exists", 409);
+        throw new ApiError(409, "User Already Exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createdUser = await authRepository.createUser({ email, password: hashedPassword, role: "member" });
+    const createdUser = await authRepository.createUser({ email, password: hashedPassword, role: "member", name });
 
 
     const sanitizedUser = await authRepository.findUserById(createdUser._id);
@@ -62,7 +66,7 @@ const registerUser = async (email, password, name) => {
 export const loginUser = async (email, password) => {
     const user = await authRepository.finduserWithpasswordByEmail(email);
     if (!user) {
-        throw new ApiError("Invalid credentials", 401``);
+        throw new ApiError(401, "Invalid credentials");
     }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
@@ -95,7 +99,7 @@ export const refreshUserAccessToken = async ({ userId, incomingRefreshToken }) =
 }
 
 export const changePassword = async ({ userId, oldPassword, newPassword }) => {
-    const user = await authRepository.finduserWithpasswordByEmail(reqUserEmailFallback(userId))
+    const user = await authRepository.findUserWithPasswordById(userId)
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -122,8 +126,3 @@ export const changePassword = async ({ userId, oldPassword, newPassword }) => {
 
 
 }
-
-const reqUserEmailFallback = (userId) => {
-    return userId;
-};
-
