@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import errorMiddleware from "./middleware/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
 
 
 
@@ -23,6 +24,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/workspaces", workspaceRoutes);
+
 
 
 
