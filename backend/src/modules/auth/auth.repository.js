@@ -5,10 +5,12 @@ export const createUser = async (userData) => {
     return user;
 }
 
-export const finduserByEmail = async (email) => {
-    return await User.findOne({ email }).select("-password");
-}
-
+export const finduserByEmail =
+    async (email) => {
+        return await User.findOne({
+            email: email.toLowerCase(),
+        }).select("-password");
+    };
 export const findUserById = async (userId) => {
     return await User.findById(userId).select("-password");
 }

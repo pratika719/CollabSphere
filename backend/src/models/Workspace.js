@@ -28,7 +28,7 @@ const workspacememberSchema = new mongoose.Schema({
 
 );
 
-const workspaceScema = new mongoose.Schema({
+const workspaceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "workspace name is required"],
@@ -39,7 +39,7 @@ const workspaceScema = new mongoose.Schema({
     },
     slug: {
         type: String,
-        required: true,
+
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,20 +75,20 @@ const workspaceScema = new mongoose.Schema({
     }
 );
 
-workspaceScema.index({ owner: 1 });
-workspaceScema.index({ slug: 1 });
-workspaceScema.index({ "members.user": 1 });
+workspaceSchema.index({ owner: 1 });
+workspaceSchema.index({ slug: 1 });
+workspaceSchema.index({ "members.user": 1 });
 
-workspaceScema.methods.isMember = function (userId) {
+workspaceSchema.methods.isMember = function (userId) {
     return this.members.some((member) => member.user.toString() === userId.toString());
 };
 
-workspaceScema.methods.getMemberRole = function (userId) {
+workspaceSchema.methods.getMemberRole = function (userId) {
     const member = this.members.find((member) => member.user.toString() === userId.toString());
     return member?.role;
 };
 
 
 
-const Workspace = mongoose.model("Workspace", workspaceScema);
+const Workspace = mongoose.model("Workspace", workspaceSchema);
 export default Workspace;

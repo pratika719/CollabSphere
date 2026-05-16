@@ -1,7 +1,37 @@
 import Workspace from "../../models/Workspace.js";
-import Member from "../../models/Member.js";
-import ApiResponse from "../../utils/ApiResponse.js";
-import ApiError from "../../utils/ApiError.js";
+//import Member from "../../models/Member.js";
+;
+
+export const addMemberToWorkspace =
+    async (
+        workspaceId,
+        userId,
+        role
+    ) => {
+        return await Workspace.findByIdAndUpdate(
+            workspaceId,
+            {
+                $push: {
+                    members: {
+                        user: userId,
+                        role: role,
+                    },
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        )
+            .populate(
+                "owner",
+                "name email avatar"
+            )
+            .populate(
+                "members.user",
+                "name email avatar"
+            );
+    };
 
 
 export const createworkspace = async (workspaceData) => {
@@ -21,7 +51,9 @@ export const findWorkspaceByIdRaw =
     };
 
 export const findworkspacebyUser = async (userId) => {
-    return (await Workspace.find({ "members.user": userId }).populate("owner", "name email avatar")).toSorted({ updatedAt: -1 });
+    return await Workspace.find({ "members.user": userId })
+        .populate("owner", "name email avatar")
+        .sort({ updatedAt: -1 });
 
 }
 export const updateWorkspace = async (
@@ -149,3 +181,64 @@ export const countWorkspaceMembers =
 
         return workspace?.members?.length || 0;
     };
+
+
+export const archiveWorkspace =
+    async (workspaceId) => {
+        return await Workspace.findByIdAndUpdate(
+            workspaceId,
+            {
+                isArchived: true,
+            },
+            {
+                new: true,
+            }
+        );
+    };
+
+
+export const removeMemberFromWorkspace =
+    async (
+        workspaceId,
+        memberId
+    ) => {
+        return await Workspace.findByIdAndUpdate(
+            workspaceId,
+            {
+                $pull: {
+                    members: {
+                        user: memberId,
+                    },
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        )
+            .populate(
+                "owner",
+                "name email avatar"
+            )
+            .populate(
+                "members.user",
+                "name email avatar"
+            );
+    };
+
+
+export const listmembers = async (workspaceId) => {
+
+    const workspace = await Workspace.findById(workspaceId)
+        .populate("members.user", "name email avatar");
+
+
+    if (!workspace) {
+        throw new ApiError(
+            404,
+            "Workspace not found"
+        );
+    }
+    return workspace.members;
+
+}

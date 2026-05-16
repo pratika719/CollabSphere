@@ -54,7 +54,7 @@ export const createWorkspace = async ({
     */
 
     const workspace =
-        await workspaceRepository.createWorkspace({
+        await workspaceRepository.createworkspace({
             name,
             description,
 
@@ -80,7 +80,7 @@ export const createWorkspace = async ({
     |--------------------------------------------------------------------------
     */
 
-    return await workspaceRepository.findWorkspaceById(
+    return await workspaceRepository.findworkspacebyid(
         workspace._id
     );
 };
@@ -93,7 +93,7 @@ export const createWorkspace = async ({
 
 export const getUserWorkspaces =
     async (userId) => {
-        return await workspaceRepository.findWorkspacesByUser(
+        return await workspaceRepository.findworkspacebyUser(
             userId
         );
     };
@@ -110,7 +110,7 @@ export const getUserWorkspaces =
 export const getWorkspaceById =
     async (workspaceId) => {
         const workspace =
-            await workspaceRepository.findWorkspaceById(
+            await workspaceRepository.findworkspacebyid(
                 workspaceId
             );
 
@@ -237,10 +237,9 @@ export const inviteMember = async ({
     */
 
     const user =
-        await authRepository.findUserByEmail(
+        await authRepository.finduserByEmail(
             email
         );
-
     if (!user) {
         throw new ApiError(
             404,
@@ -275,10 +274,8 @@ export const inviteMember = async ({
 
     return await workspaceRepository.addMemberToWorkspace(
         workspaceId,
-        {
-            user: user._id,
-            role,
-        }
+        user._id,
+        role
     );
 };
 
@@ -428,3 +425,7 @@ export const updateMemberRole =
     };
 
 
+export const listmembers = async (workspaceId) => {
+
+    return await workspaceRepository.listmembers(workspaceId);
+}

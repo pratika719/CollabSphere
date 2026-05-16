@@ -23,7 +23,7 @@ export const createWorkspace = asynchandler(async (req, res, next) => {
 
 export const getWorkspaces = asynchandler(async (req, res, next) => {
 
-    const workspaces = await workspaceService.getWorkspaces({ userId: req.user._id });
+    const workspaces = await workspaceService.getUserWorkspaces(req.user._id);
 
     return res.status(200).json(
         new ApiResponse(
@@ -58,7 +58,7 @@ export const updatedWorkspace = asynchandler(async (req, res, next) => {
         );
     }
     const { updateData } = req.body;
-    const workspace = await workspaceService.updateWorkspace(workspaceId, updateData);
+    const workspace = await workspaceService.updateWorkspace({ workspaceId, updateData });
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -90,7 +90,7 @@ export const inviteMember = asynchandler(async (req, res, next) => {
         );
     }
 
-    const workspace = await workspaceService.inviteMember(workspaceId, email, role);
+    const workspace = await workspaceService.inviteMember({ workspaceId, email, role });
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -101,16 +101,20 @@ export const inviteMember = asynchandler(async (req, res, next) => {
 })
 
 export const updateMemberRole = asynchandler(async (req, res, next) => {
-    const { workspaceId } = req.params;
-    const { email, role } = req.body;
-    if (!email || !role) {
+    const { memberId } = req.params;
+    const { role } = req.body;
+    if (!memberId || !role) {
         throw new ApiError(
             400,
-            "Email and role are required"
+            "Member ID and role are required"
         );
     }
 
-    const workspace = await workspaceService.updateRole(workspaceId, email, role);
+    const workspace = await workspaceService.updateMemberRole({
+        workspace: req.workspace,
+        memberId,
+        role
+    });
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -142,3 +146,16 @@ export const removeMember = asynchandler(async (req, res) => {
         )
     );
 });
+
+
+export const listmembers = asynchandler(async (req, res, next) => {
+    const { workspaceId } = req.params;
+    const workspace = await workspaceService.getWorkspaceById(workspaceId);
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            workspace,
+            "Workspace fetched successfully"
+        )
+    );
+})
