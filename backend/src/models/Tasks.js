@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import Workspace from "./Workspace"
+
 const taskSchema = new mongoose.Schema({
 
     title: {
@@ -15,7 +15,7 @@ const taskSchema = new mongoose.Schema({
         maxlength: [500, "Description cannot be more than 500 characters"],
         default: "",
     },
-    Workspace: {
+    workspace: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Workspace",
         required: true,
@@ -65,7 +65,7 @@ const taskSchema = new mongoose.Schema({
         }
     ],
 
-    tags: [
+    labels: [
         {
             type: String,
             trim: true,
@@ -92,9 +92,7 @@ taskSchema.index({
     board: 1,
 });
 
-taskSchema.index({
-    assignee: 1,
-});
+
 
 taskSchema.index({
     status: 1,
@@ -110,15 +108,13 @@ taskSchema.index({
 
 
 
-taskSchema.pre("save", function (next) {
+taskSchema.pre("save", function () {
     if (
         this.isModified("status") &&
-        this.status === "done"
+        this.status === "completed"
     ) {
         this.completedAt = new Date();
     }
-
-    next();
 });
 
 const Task = mongoose.model("Task", taskSchema);

@@ -1,25 +1,31 @@
-import asynchandler from "../utils/asynchandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 import ApiError from "../utils/ApiError.js";
 import * as workspaceRepository from "../modules/workspaces/workspace.repository.js";
 
+export const authorizeWorkspaceRole =
+    (...allowedRoles) =>
+        asyncHandler(async (req, res, next) => {
+            if (!req.workspaceMember) {
+                throw new ApiError(
+                    403,
+                    "You are not a member of this workspace"
+                );
+            }
 
-export const authorizeWorkspaceRole = (...allowedRoles) => async (req, res, next) => {
+            const currentRole = req.workspaceMember.role;
 
-    if (!req.workspaceMember) {
-        throw new ApiError(403, "You are not a member of this workspace");
-    }
+            if (!allowedRoles.includes(currentRole)) {
+                throw new ApiError(
+                    403,
+                    "You are not authorized to perform this action"
+                );
+            }
 
-    const currentRole = req.workspaceMember.role;
-    if (!allowedRoles.includes(currentRole)) {
-        throw new ApiError(403, "You are not authorized to perform this action");
-    }
+            return next();
+        });
 
-    return next();
-
-}
-
-export const workspaceOwnerOnly = asynchandler(async (req, res, next) => {
+export const workspaceOwnerOnly = asyncHandler(async (req, res, next) => {
     if (!req.workspace) {
         throw new ApiError(
             500,
@@ -27,25 +33,29 @@ export const workspaceOwnerOnly = asynchandler(async (req, res, next) => {
         );
     }
 
-    const isOwner = req.workspace.owner._id.toString() === req.user._id.toString();
+    const ownerId = req.workspace.owner._id
+        ? req.workspace.owner._id.toString()
+        : req.workspace.owner.toString();
+
+    const isOwner = ownerId === req.user._id.toString();
     if (!isOwner) {
         throw new ApiError(403, "You are not the owner of this workspace");
     }
-    req.workspaceMember.role = "owner";
+
+    if (req.workspaceMember) {
+        req.workspaceMember.role = "owner";
+    }
+
     next();
+});
 
-})
 export const optionalWorkspaceAccess =
-    asynchandler(async (req, res, next) => {
+    asyncHandler(async (req, res, next) => {
         const { workspaceId } = req.params;
-
-
 
         if (!workspaceId) {
             return next();
         }
-
-
 
         if (
             !mongoose.Types.ObjectId.isValid(
@@ -57,8 +67,6 @@ export const optionalWorkspaceAccess =
 
             return next();
         }
-
-
 
         const workspace =
             await workspaceRepository.findWorkspaceByIdRaw(
@@ -72,16 +80,12 @@ export const optionalWorkspaceAccess =
             return next();
         }
 
-
-
         if (!req.user) {
             req.workspace = workspace;
             req.workspaceMember = null;
 
             return next();
         }
-
-
 
         const member =
             workspace.members.find(

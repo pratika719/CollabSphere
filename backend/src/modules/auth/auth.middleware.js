@@ -4,19 +4,16 @@ import ApiError from "../../utils/ApiError.js";
 import * as authRepository from "../auth/auth.repository.js";
 
 
-export const verifyJWT = async (req, res, next) => {
+import asyncHandler from "../../utils/asyncHandler.js";
+
+export const verifyJWT = asyncHandler(async (req, res, next) => {
 
 
     const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
 
-    console.log("TOKEN:", token);
 
-    console.log(
-        "ACCESS SECRET:",
-        process.env.ACCESS_TOKEN_SECRET
-    );
 
     if (!token) {
         throw new ApiError(401, "Unauthorized request");
@@ -27,7 +24,7 @@ export const verifyJWT = async (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET
     );
 
-    console.log("DECODED:", decodedToken);
+
 
     const user = await authRepository.findUserById(decodedToken._id);
 
@@ -37,6 +34,6 @@ export const verifyJWT = async (req, res, next) => {
 
     req.user = user;
 
-    return next();
-};
+    next();
+});
 

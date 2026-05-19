@@ -1,9 +1,9 @@
-import asynchandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import * as workspaceService from "./workspace.service.js";
 
-export const createWorkspace = asynchandler(async (req, res, next) => {
+export const createWorkspace = asyncHandler(async (req, res, next) => {
 
     const { name, description } = req.body;
 
@@ -21,7 +21,7 @@ export const createWorkspace = asynchandler(async (req, res, next) => {
 });
 
 
-export const getWorkspaces = asynchandler(async (req, res, next) => {
+export const getWorkspaces = asyncHandler(async (req, res, next) => {
 
     const workspaces = await workspaceService.getUserWorkspaces(req.user._id);
 
@@ -34,7 +34,7 @@ export const getWorkspaces = asynchandler(async (req, res, next) => {
     );
 })
 
-export const getworkspaceById = asynchandler(async (req, res, next) => {
+export const getworkspaceById = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
     const workspace = await workspaceService.getWorkspaceById(workspaceId);
     return res.status(200).json(
@@ -46,7 +46,7 @@ export const getworkspaceById = asynchandler(async (req, res, next) => {
     );
 })
 
-export const updatedWorkspace = asynchandler(async (req, res, next) => {
+export const updatedWorkspace = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
     if (
         Object.keys(req.body).length ===
@@ -68,7 +68,7 @@ export const updatedWorkspace = asynchandler(async (req, res, next) => {
     );
 })
 
-export const archiveWorkspace = asynchandler(async (req, res, next) => {
+export const archiveWorkspace = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
     const workspace = await workspaceService.archiveWorkspace(workspaceId);
     return res.status(200).json(
@@ -80,7 +80,7 @@ export const archiveWorkspace = asynchandler(async (req, res, next) => {
     );
 })
 
-export const inviteMember = asynchandler(async (req, res, next) => {
+export const inviteMember = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
     const { email, role } = req.body;
     if (!email) {
@@ -100,7 +100,7 @@ export const inviteMember = asynchandler(async (req, res, next) => {
     );
 })
 
-export const updateMemberRole = asynchandler(async (req, res, next) => {
+export const updateMemberRole = asyncHandler(async (req, res, next) => {
     const { memberId } = req.params;
     const { role } = req.body;
     if (!memberId || !role) {
@@ -124,7 +124,7 @@ export const updateMemberRole = asynchandler(async (req, res, next) => {
     );
 })
 
-export const removeMember = asynchandler(async (req, res) => {
+export const removeMember = asyncHandler(async (req, res) => {
     const { memberId } = req.params;
 
     /*
@@ -148,7 +148,7 @@ export const removeMember = asynchandler(async (req, res) => {
 });
 
 
-export const listmembers = asynchandler(async (req, res, next) => {
+export const listmembers = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
     const workspace = await workspaceService.getWorkspaceById(workspaceId);
     return res.status(200).json(

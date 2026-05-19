@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-const boardMemberSchema = new mongoose.Schema({
-
+const boardSchema = new mongoose.Schema({
     workspace: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Workspace",
@@ -24,7 +23,6 @@ const boardMemberSchema = new mongoose.Schema({
         type: String,
         default: "#FFFFFF",
     },
-
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -39,10 +37,7 @@ const boardMemberSchema = new mongoose.Schema({
         timestamps: true,
         versionKey: false,
     }
-)
-
-
-
+);
 
 boardSchema.index({
     workspace: 1,
@@ -52,7 +47,3 @@ boardSchema.index({
 const Board = mongoose.model("Board", boardSchema);
 
 export default Board;
-
-
-
-

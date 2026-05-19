@@ -1,6 +1,6 @@
 import Workspace from "../../models/Workspace.js";
-//import Member from "../../models/Member.js";
-;
+import ApiError from "../../utils/ApiError.js";
+
 
 export const addMemberToWorkspace =
     async (

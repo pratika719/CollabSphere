@@ -2,8 +2,10 @@ import mongoose from "mongoose";
 import ApiError from "../../utils/ApiError.js";
 import * as workspaceRepository from "./workspace.repository.js";
 
+import asyncHandler from "../../utils/asyncHandler.js";
+
 export const workspaceAccess =
-    async (req, res, next) => {
+    asyncHandler(async (req, res, next) => {
 
         const { workspaceId } =
             req.params;
@@ -30,8 +32,7 @@ export const workspaceAccess =
                 "Workspace not found"
             );
         }
-        console.log(workspace.members, "members")
-        console.log(req.user._id, "req.user._id")
+
         const member =
             workspace.members.find(
                 (member) =>
@@ -51,4 +52,4 @@ export const workspaceAccess =
             member;
 
         next();
-    };
+    });
