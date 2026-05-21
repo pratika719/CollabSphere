@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import useAuthStore from "../../store/auth.store.js";
 import useLogout from "../../hooks/useLogout.js";
 
+
 export default function AppLayout() {
     const { user } = useAuthStore();
     const { logout, isPending } = useLogout();
@@ -75,11 +76,10 @@ export default function AppLayout() {
                                 <Link
                                     key={item.name}
                                     to={item.path}
-                                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${
-                                        active
-                                            ? "bg-purple-600/10 text-purple-400 border border-purple-500/20"
-                                            : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.02] border border-transparent"
-                                    }`}
+                                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${active
+                                        ? "bg-purple-600/10 text-purple-400 border border-purple-500/20"
+                                        : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.02] border border-transparent"
+                                        }`}
                                 >
                                     <span className={active ? "text-purple-400" : "text-slate-500 group-hover:text-slate-300"}>
                                         {item.icon}
@@ -135,4 +135,4 @@ export default function AppLayout() {
             </main>
         </div>
     );
-}
+}

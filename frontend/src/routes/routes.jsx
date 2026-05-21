@@ -6,6 +6,8 @@ import AppLayout from "../components/layout/AppLayout.jsx";
 import LoginPage from "../features/auth/pages/LoginPage.jsx";
 import RegisterPage from "../features/auth/pages/RegisterPage.jsx";
 import DashboardPage from "../pages/DashboardPage.jsx";
+import WorkspacePage from "../pages/WorkspacePage.jsx";
+import BoardPage from "../pages/BoardPage.jsx";
 
 export const routesConfig = [
     // Redirect root path to dashboard (which will be protected)
@@ -42,6 +44,14 @@ export const routesConfig = [
                     {
                         path: "dashboard",
                         element: <DashboardPage />,
+                    },
+                    {
+                        path: "workspaces/:workspaceId",
+                        element: <WorkspacePage />,
+                    },
+                    {
+                        path: "workspaces/:workspaceId/boards/:boardId",
+                        element: <BoardPage />,
                     },
                 ],
             },
