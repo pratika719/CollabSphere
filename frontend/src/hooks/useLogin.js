@@ -15,7 +15,8 @@ const useLogin = () => {
         mutationFn: loginUser,
 
         onSuccess: (response) => {
-            const user = response?.data?.data?.user;
+            // response matches ApiResponse { data: { user, accessToken, refreshToken } }
+            const user = response?.data?.user;
 
             if (user) {
                 setUser(user);
@@ -32,30 +33,12 @@ const useLogin = () => {
     });
 
     return {
-        /*
-        |--------------------------------------------------------------------------
-        | ACTIONS
-        |--------------------------------------------------------------------------
-        */
-
         login: mutation.mutate,
-
         loginAsync: mutation.mutateAsync,
-
-        /*
-        |--------------------------------------------------------------------------
-        | STATES
-        |--------------------------------------------------------------------------
-        */
-
         isPending: mutation.isPending,
-
         isSuccess: mutation.isSuccess,
-
         isError: mutation.isError,
-
         error: mutation.error,
-
         data: mutation.data,
     };
 };

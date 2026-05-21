@@ -1,29 +1,27 @@
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/auth.api.js";
-import useAuthStore from "../../store/auth.store";
+import useAuthStore from "../store/auth.store.js";
+
 export default function useRegister() {
     const navigate = useNavigate();
-
-    const { setUser, } = useAuthStore()
+    const { setUser } = useAuthStore();
 
     const mutation = useMutation({
         mutationFn: registerUser,
         onSuccess: (response) => {
+            // Backend registration returns ApiResponse where data is the User object directly.
+            const user = response?.data;
 
-            const user =
-                response?.data?.user;
-
-
-            setUser(user);
+            if (user) {
+                setUser(user);
+            }
             navigate("/dashboard");
         },
         onError: (error) => {
             console.error(
-                error?.response?.data
-                    ?.message ||
-                "Registration failed"
-            )
+                error?.response?.data?.message || "Registration failed"
+            );
         },
     });
 
@@ -37,5 +35,6 @@ export default function useRegister() {
         data: mutation.data,
     };
 }
+
 
 
