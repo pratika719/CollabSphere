@@ -1,18 +1,20 @@
 import TaskCard from "../task/TaskCard.jsx";
 
-/**
- * BoardColumn — Kanban column container
- *
- * Large component that ORCHESTRATES.
- * Small components (TaskCard) DISPLAY.
- *
- * Props:
- *   title: string (e.g. "To Do", "In Progress", "Completed")
- *   status: string (e.g. "todo", "in-progress", "completed")
- *   tasks: array of task objects filtered to this column's status
- *   onCreateTask: function to open create task modal for this column
- */
-export default function BoardColumn({ title, status, tasks = [], onCreateTask }) {
+/*
+|--------------------------------------------------------------------------
+| BOARD COLUMN — Kanban column container
+|--------------------------------------------------------------------------
+|
+| Props:
+|   title: string (e.g. "To Do", "In Progress", "Completed")
+|   status: string (e.g. "todo", "in-progress", "completed")
+|   tasks: array of task objects filtered to this column's status
+|   onCreateTask: (status) => void
+|   onTaskClick: (task) => void — opens task detail modal
+|
+*/
+
+export default function BoardColumn({ title, status, tasks = [], onCreateTask, onTaskClick }) {
     const statusConfig = {
         "todo": {
             dot: "bg-slate-400",
@@ -63,7 +65,11 @@ export default function BoardColumn({ title, status, tasks = [], onCreateTask })
             {/* Task List */}
             <div className="flex-1 px-2 pb-2 space-y-2 overflow-y-auto max-h-[calc(100vh-240px)] scrollbar-thin">
                 {tasks.map((task) => (
-                    <TaskCard key={task._id} task={task} />
+                    <TaskCard
+                        key={task._id}
+                        task={task}
+                        onTaskClick={onTaskClick}
+                    />
                 ))}
 
                 {/* Empty state */}

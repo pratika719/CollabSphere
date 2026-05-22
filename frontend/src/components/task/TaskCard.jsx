@@ -1,12 +1,18 @@
-/**
- * TaskCard — Reusable domain-driven component
- *
- * Used in: BoardColumn, search results, filtered views, assigned tasks.
- *
- * Props:
- *   task: { _id, title, description, priority, status, dueDate, labels, assignee }
- */
-export default function TaskCard({ task }) {
+/*
+|--------------------------------------------------------------------------
+| TASK CARD
+|--------------------------------------------------------------------------
+|
+| Reusable domain-driven component for task display.
+| Now clickable — opens TaskDetailModal via `onTaskClick` prop.
+|
+| Props:
+|   task: { _id, title, description, priority, status, dueDate, labels, assignee }
+|   onTaskClick?: (task) => void
+|
+*/
+
+export default function TaskCard({ task, onTaskClick }) {
     const priorityConfig = {
         high: {
             icon: (
@@ -79,7 +85,10 @@ export default function TaskCard({ task }) {
     };
 
     return (
-        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:border-slate-700/60 hover:bg-slate-900/80 transition-all duration-200 cursor-pointer group">
+        <div
+            onClick={() => onTaskClick?.(task)}
+            className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:border-slate-700/60 hover:bg-slate-900/80 transition-all duration-200 cursor-pointer group"
+        >
             {/* Labels */}
             {task.labels && task.labels.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-2.5">

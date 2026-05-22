@@ -26,6 +26,7 @@ const processQueue = (error, token = null) => {
 
 api.interceptors.request.use(
     async (config) => {
+        //config is req object
         return config;
     },
     (error) => {
@@ -48,7 +49,7 @@ api.interceptors.response.use(
             }
 
             if (isRefreshing) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });
                 })
                     .then(() => {
@@ -71,14 +72,14 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 isRefreshing = false;
                 processQueue(refreshError, null);
-                
+
                 // Clear user store and session on refresh failure
                 try {
                     appEvents.emit("auth:clear");
                 } catch (e) {
                     console.error("Failed to clear auth state on session expiration:", e);
                 }
-                
+
                 return Promise.reject(refreshError);
             }
         }
@@ -96,7 +97,5 @@ api.interceptors.response.use(
 );
 
 export default api;
-
-
 
 

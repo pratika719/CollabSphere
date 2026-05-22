@@ -1,18 +1,34 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useWorkspace } from "../hooks/useWorkspaces.js";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useWorkspace, useArchiveWorkspace } from "../hooks/useWorkspaces.js";
 import { useBoards } from "../hooks/useBoards.js";
 import useWorkspaceStore from "../store/workspace.store.js";
 import BoardCard from "../components/board/BoardCard.jsx";
 import CreateBoardModal from "../components/modals/CreateBoardModal.jsx";
+import EditWorkspaceModal from "../components/modals/EditWorkspaceModal.jsx";
+import ConfirmDialog from "../components/modals/ConfirmDialog.jsx";
+
+/*
+|--------------------------------------------------------------------------
+| WORKSPACE PAGE
+|--------------------------------------------------------------------------
+|
+| Route: /workspaces/:workspaceId
+| Displays workspace header with edit/archive actions + board grid.
+|
+*/
 
 export default function WorkspacePage() {
     const { workspaceId } = useParams();
+    const navigate = useNavigate();
     const [showCreateBoard, setShowCreateBoard] = useState(false);
+    const [showEditWorkspace, setShowEditWorkspace] = useState(false);
+    const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const { setCurrentWorkspace } = useWorkspaceStore();
 
     const { data: workspaceResponse, isLoading: wsLoading } = useWorkspace(workspaceId);
     const { data: boardsResponse, isLoading: boardsLoading } = useBoards(workspaceId);
+    const { mutate: archiveWorkspace, isPending: isArchiving } = useArchiveWorkspace();
 
     const workspace = workspaceResponse?.data;
     const boards = boardsResponse?.data || [];
@@ -23,6 +39,15 @@ export default function WorkspacePage() {
             setCurrentWorkspace(workspaceId);
         }
     }, [workspaceId, setCurrentWorkspace]);
+
+    const handleArchive = () => {
+        archiveWorkspace(workspaceId, {
+            onSuccess: () => {
+                setShowArchiveConfirm(false);
+                navigate("/dashboard");
+            },
+        });
+    };
 
     if (wsLoading) {
         return (
@@ -88,15 +113,37 @@ export default function WorkspacePage() {
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => setShowCreateBoard(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[13px] font-semibold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-200 shrink-0"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    New Board
-                </button>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 shrink-0">
+                    <button
+                        onClick={() => setShowEditWorkspace(true)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-white/[0.06] text-[12px] font-semibold transition-all duration-200"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => setShowArchiveConfirm(true)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-slate-800/60 text-slate-400 hover:text-red-400 hover:border-red-500/20 hover:bg-red-500/[0.04] text-[12px] font-semibold transition-all duration-200"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Archive
+                    </button>
+                    <button
+                        onClick={() => setShowCreateBoard(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[13px] font-semibold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-200"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        New Board
+                    </button>
+                </div>
             </div>
 
             {/* Board Grid */}
@@ -143,11 +190,27 @@ export default function WorkspacePage() {
                 )}
             </div>
 
-            {/* Create Board Modal */}
+            {/* Modals */}
             <CreateBoardModal
                 isOpen={showCreateBoard}
                 onClose={() => setShowCreateBoard(false)}
                 workspaceId={workspaceId}
+            />
+
+            <EditWorkspaceModal
+                isOpen={showEditWorkspace}
+                onClose={() => setShowEditWorkspace(false)}
+                workspace={workspace}
+            />
+
+            <ConfirmDialog
+                isOpen={showArchiveConfirm}
+                onClose={() => setShowArchiveConfirm(false)}
+                onConfirm={handleArchive}
+                title="Archive Workspace"
+                message={`Are you sure you want to archive "${workspace.name}"? All boards and tasks will also be archived.`}
+                confirmLabel="Archive"
+                isPending={isArchiving}
             />
         </div>
     );

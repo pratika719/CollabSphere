@@ -3,6 +3,16 @@ import useAuthStore from "../../store/auth.store.js";
 import useWorkspaceStore from "../../store/workspace.store.js";
 import { useWorkspaces } from "../../hooks/useWorkspaces.js";
 
+/*
+|--------------------------------------------------------------------------
+| NAVBAR — Top horizontal bar
+|--------------------------------------------------------------------------
+|
+| Renders breadcrumbs, search trigger, notifications, and user avatar.
+| Breadcrumbs are auto-generated from the current route path.
+|
+*/
+
 export default function Navbar() {
     const { user } = useAuthStore();
     const location = useLocation();
@@ -20,7 +30,7 @@ export default function Navbar() {
         if (path === "/dashboard") {
             crumbs.push({ label: "Dashboard", path: "/dashboard" });
         } else if (path.startsWith("/workspaces")) {
-            crumbs.push({ label: "Workspaces", path: "/dashboard" });
+            crumbs.push({ label: "Dashboard", path: "/dashboard" });
             if (currentWorkspace) {
                 crumbs.push({
                     label: currentWorkspace.name,
@@ -29,6 +39,10 @@ export default function Navbar() {
             }
             if (path.includes("/boards/")) {
                 crumbs.push({ label: "Board", path: path });
+            } else if (path.endsWith("/tasks")) {
+                crumbs.push({ label: "Tasks", path: path });
+            } else if (path.endsWith("/members")) {
+                crumbs.push({ label: "Members", path: path });
             }
         }
 
@@ -37,20 +51,10 @@ export default function Navbar() {
 
     const breadcrumbs = buildBreadcrumbs();
 
-    // Get page title based on current route
-    const getPageTitle = () => {
-        const path = location.pathname;
-        if (path === "/dashboard") return "Dashboard";
-        if (path.startsWith("/workspaces") && path.includes("/boards/")) return "Board View";
-        if (path.startsWith("/workspaces")) return currentWorkspace?.name || "Workspace";
-        return "CollabSphere";
-    };
-
     return (
         <header className="h-[60px] border-b border-slate-800/40 bg-slate-950/60 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 relative z-10">
-            {/* Left: Breadcrumbs + Title */}
+            {/* Left: Breadcrumbs */}
             <div className="flex items-center gap-4">
-                {/* Breadcrumbs */}
                 <nav className="flex items-center gap-1.5 text-[12px]">
                     {breadcrumbs.map((crumb, index) => (
                         <span key={crumb.path} className="flex items-center gap-1.5">
@@ -90,7 +94,6 @@ export default function Navbar() {
                     <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    {/* Notification dot */}
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-purple-500 rounded-full border-2 border-slate-950" />
                 </button>
 

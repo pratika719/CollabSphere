@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspaces } from "../../hooks/useWorkspaces.js";
 import useWorkspaceStore from "../../store/workspace.store.js";
@@ -11,7 +11,7 @@ export default function WorkspaceSwitcher() {
     const { data: workspacesResponse, isLoading } = useWorkspaces();
     const { currentWorkspaceId, setCurrentWorkspace } = useWorkspaceStore();
 
-    const workspaces = workspacesResponse?.data || [];
+    const workspaces = useMemo(() => workspacesResponse?.data || [], [workspacesResponse?.data]);
     const currentWorkspace = workspaces.find((ws) => ws._id === currentWorkspaceId);
 
     // Close dropdown on outside click
@@ -94,11 +94,10 @@ export default function WorkspaceSwitcher() {
                             <button
                                 key={ws._id}
                                 onClick={() => handleSelect(ws)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${
-                                    ws._id === currentWorkspaceId
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 ${ws._id === currentWorkspaceId
                                         ? "bg-purple-600/10 border border-purple-500/20"
                                         : "hover:bg-white/[0.04] border border-transparent"
-                                }`}
+                                    }`}
                             >
                                 <div className={`w-7 h-7 rounded-lg bg-gradient-to-tr ${getWorkspaceColor(ws.name)} flex items-center justify-center text-[10px] font-bold text-white shadow-sm shrink-0`}>
                                     {ws.name?.charAt(0)?.toUpperCase()}
