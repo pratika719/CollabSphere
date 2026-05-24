@@ -1,4 +1,8 @@
 import TaskCard from "../task/TaskCard.jsx";
+import {useDroppable} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +19,16 @@ import TaskCard from "../task/TaskCard.jsx";
 */
 
 export default function BoardColumn({ title, status, tasks = [], onCreateTask, onTaskClick }) {
+   const {isOver,setNodeRef}=useDroppable({
+    id:status,
+   });
+
+  
+
+   const taskIds=tasks.map((t)=>t._id);
+
+   
+   
     const statusConfig = {
         "todo": {
             dot: "bg-slate-400",
@@ -39,7 +53,14 @@ export default function BoardColumn({ title, status, tasks = [], onCreateTask, o
     const config = statusConfig[status] || statusConfig["todo"];
 
     return (
-        <div className={`flex flex-col w-[320px] shrink-0 rounded-2xl ${config.bg} border ${config.border}`}>
+        <div 
+        
+        ref={setNodeRef}  // ③ Attach droppable ref to the column root
+            className={`flex flex-col w-[320px] shrink-0 rounded-2xl ${config.bg} border ${
+                isOver
+                    ? "border-purple-500/40 bg-purple-500/[0.04] shadow-lg shadow-purple-500/5 scale-[1.01]"
+                    : config.border
+            } transition-all duration-200`}>
             {/* Column Header */}
             <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-2.5">
@@ -62,36 +83,41 @@ export default function BoardColumn({ title, status, tasks = [], onCreateTask, o
                 </button>
             </div>
 
-            {/* Task List */}
-            <div className="flex-1 px-2 pb-2 space-y-2 overflow-y-auto max-h-[calc(100vh-240px)] scrollbar-thin">
-                {tasks.map((task) => (
-                    <TaskCard
-                        key={task._id}
-                        task={task}
-                        onTaskClick={onTaskClick}
-                    />
-                ))}
+            {/* Task List — wrapped in SortableContext */}
+            <SortableContext
+                items={taskIds}
+                strategy={verticalListSortingStrategy}
+            >
+                <div className="flex-1 px-2 pb-2 space-y-2 overflow-y-auto max-h-[calc(100vh-240px)] scrollbar-thin">
+                    {tasks.map((task) => (
+                        <TaskCard
+                            key={task._id}
+                            task={task}
+                            onTaskClick={onTaskClick}
+                        />
+                    ))}
 
-                {/* Empty state */}
-                {tasks.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-8 px-4">
-                        <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-dashed border-slate-800 flex items-center justify-center mb-3">
-                            <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                            </svg>
+                    {/* Empty state */}
+                    {tasks.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 px-4">
+                            <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-dashed border-slate-800 flex items-center justify-center mb-3">
+                                <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
+                            <p className="text-[11px] text-slate-600 font-medium text-center">
+                                No tasks yet
+                            </p>
+                            <button
+                                onClick={() => onCreateTask?.(status)}
+                                className="mt-2 text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                            >
+                                Add a task
+                            </button>
                         </div>
-                        <p className="text-[11px] text-slate-600 font-medium text-center">
-                            No tasks yet
-                        </p>
-                        <button
-                            onClick={() => onCreateTask?.(status)}
-                            className="mt-2 text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition-colors"
-                        >
-                            Add a task
-                        </button>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            </SortableContext>
 
             {/* Bottom add task button */}
             {tasks.length > 0 && (

@@ -9,7 +9,7 @@ export default function WorkspaceSwitcher() {
     const navigate = useNavigate();
 
     const { data: workspacesResponse, isLoading } = useWorkspaces();
-    const { currentWorkspaceId, setCurrentWorkspace } = useWorkspaceStore();
+    const { currentWorkspaceId, setCurrentWorkspace } = useWorkspaceStore();    
 
     const workspaces = useMemo(() => workspacesResponse?.data || [], [workspacesResponse?.data]);
     const currentWorkspace = workspaces.find((ws) => ws._id === currentWorkspaceId);

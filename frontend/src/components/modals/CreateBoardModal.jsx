@@ -13,12 +13,14 @@ import { useCreateBoard } from "../../hooks/useBoards.js";
  */
 export default function CreateBoardModal({ isOpen, onClose, workspaceId }) {
     const [title, setTitle] = useState("");
+    const [error, setError] = useState(null);
     const { mutate: createBoard, isPending } = useCreateBoard();
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setError(null);
 
         if (!title.trim() || !workspaceId) return;
 
@@ -29,6 +31,9 @@ export default function CreateBoardModal({ isOpen, onClose, workspaceId }) {
                     setTitle("");
                     onClose();
                 },
+                onError: (err) => {
+                    setError(err.response?.data?.message || "Failed to create board");
+                }
             }
         );
     };
@@ -58,6 +63,11 @@ export default function CreateBoardModal({ isOpen, onClose, workspaceId }) {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    {error && (
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                            {error}
+                        </div>
+                    )}
                     <div className="space-y-1.5">
                         <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
                             Board Title *

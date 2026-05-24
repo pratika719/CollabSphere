@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Workspace from "../../models/Workspace.js";
 import ApiError from "../../utils/ApiError.js";
 
@@ -51,10 +52,63 @@ export const findWorkspaceByIdRaw =
     };
 
 export const findworkspacebyUser = async (userId) => {
-    return await Workspace.find({ "members.user": userId })
-        .populate("owner", "name email avatar")
-        .sort({ updatedAt: -1 });
-
+    return await Workspace.aggregate([
+        {
+            $match: {
+                "members.user": new mongoose.Types.ObjectId(userId),
+                isArchived: false
+            }
+        },
+        {
+            $lookup: {
+                from: "boards",
+                let: { workspaceId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$workspace", "$$workspaceId"] },
+                                    { $eq: ["$isArchived", false] }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: "boards"
+            }
+        },
+        {
+            $addFields: {
+                boardCount: { $size: "$boards" }
+            }
+        },
+        {
+            $project: {
+                boards: 0
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner"
+            }
+        },
+        {
+            $unwind: "$owner"
+        },
+        {
+            $project: {
+                "owner.password": 0,
+                "owner.refreshToken": 0
+            }
+        },
+        {
+            $sort: { updatedAt: -1 }
+        }
+    ]);
 }
 export const updateWorkspace = async (
     workspaceId,

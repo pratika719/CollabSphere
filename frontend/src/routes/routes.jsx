@@ -9,6 +9,7 @@ import GlobalError from "../components/layout/GlobalError.jsx";
 const LoginPage = lazy(() => import("../features/auth/pages/LoginPage.jsx"));
 const RegisterPage = lazy(() => import("../features/auth/pages/RegisterPage.jsx"));
 const DashboardPage = lazy(() => import("../pages/DashboardPage.jsx"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage.jsx"));
 const WorkspacePage = lazy(() => import("../pages/WorkspacePage.jsx"));
 const BoardPage = lazy(() => import("../pages/BoardPage.jsx"));
 const TasksPage = lazy(() => import("../pages/TasksPage.jsx"));
@@ -85,6 +86,10 @@ export const routesConfig = [
                             {
                                 path: "dashboard",
                                 element: withSuspense(DashboardPage),
+                            },
+                            {
+                                path: "profile",
+                                element: withSuspense(ProfilePage),
                             },
                             {
                                 path: "workspaces/:workspaceId",

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Board from "../../models/Board.js";
 
 export const findBoardById = async (boardId) => {
@@ -9,15 +10,68 @@ export const findBoardByIdRaw = async (boardId) => {
 };
 
 export const findBoardByworkspace = async (workspaceId) => {
-    return await Board.find({
-        workspace: workspaceId,
-        isArchived: false,
-    }).sort({
-        position: 1,
-    }).populate({
-        path: "createdBy",
-        select: "name avatar"
-    });
+    return await Board.aggregate([
+        {
+            $match: {
+                workspace: new mongoose.Types.ObjectId(workspaceId),
+                isArchived: false,
+            }
+        },
+        {
+            $lookup: {
+                from: "tasks",
+                let: { boardId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$board", "$$boardId"] },
+                                    { $eq: ["$isArchived", false] }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: "tasks"
+            }
+        },
+        {
+            $addFields: {
+                taskCount: { $size: "$tasks" }
+            }
+        },
+        {
+            $project: {
+                tasks: 0
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "createdBy"
+            }
+        },
+        {
+            $unwind: {
+                path: "$createdBy",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                "createdBy.password": 0,
+                "createdBy.refreshToken": 0
+            }
+        },
+        {
+            $sort: {
+                position: 1
+            }
+        }
+    ]);
 };
 
 export const findBoardsByWorkspace = async (workspaceId) => {

@@ -166,13 +166,23 @@ export default function WorkspaceCard({ workspace }) {
 
                     {/* Footer: Meta info */}
                     <div className="flex items-center justify-between pt-2 border-t border-slate-800/40">
-                        <div className="flex items-center gap-1.5">
-                            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="text-[11px] font-medium text-slate-500">
-                                {memberCount} member{memberCount !== 1 ? "s" : ""}
-                            </span>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-[11px] font-medium text-slate-500">
+                                    {memberCount} member{memberCount !== 1 ? "s" : ""}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                                </svg>
+                                <span className="text-[11px] font-medium text-slate-500">
+                                    {workspace.boardCount || 0} board{(workspace.boardCount || 0) !== 1 ? "s" : ""}
+                                </span>
+                            </div>
                         </div>
                         <span className="text-[10px] font-medium text-slate-600">
                             {formatDate(workspace.updatedAt)}

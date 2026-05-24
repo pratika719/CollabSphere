@@ -12,7 +12,7 @@ export const createTask = async ({
     labels = [],
     priority = "medium"
 }) => {
-    return await Task.create({
+    const task = await Task.create({
         workspace: workspaceId,
         board: boardId,
         title,
@@ -24,7 +24,14 @@ export const createTask = async ({
         labels,
         priority
     });
+
+    return await Task.findById(task._id)
+        .populate("assignee", "name email avatar")
+        .populate("createdBy", "name email avatar")
+        .populate("board", "name")
+        .populate("workspace", "name");
 }
+
 
 export const updateTask = async ({
     taskId,

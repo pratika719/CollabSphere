@@ -1,7 +1,9 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import useAuthStore from "../../store/auth.store.js";
 import useWorkspaceStore from "../../store/workspace.store.js";
 import { useWorkspaces } from "../../hooks/useWorkspaces.js";
+import  useLogout  from "../../hooks/useLogout.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -16,11 +18,29 @@ import { useWorkspaces } from "../../hooks/useWorkspaces.js";
 export default function Navbar() {
     const { user } = useAuthStore();
     const location = useLocation();
+    const navigate = useNavigate();
     const { currentWorkspaceId } = useWorkspaceStore();
     const { data: workspacesResponse } = useWorkspaces();
+    const { mutate: logout } = useLogout();
+    
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const menuRef = useRef(null);
 
     const workspaces = workspacesResponse?.data || [];
     const currentWorkspace = workspaces.find((ws) => ws._id === currentWorkspaceId);
+
+    // Close menu on outside click
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setShowUserMenu(false);
+            }
+        };
+        if (showUserMenu) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showUserMenu]);
 
     // Build breadcrumbs from current route
     const buildBreadcrumbs = () => {
@@ -29,6 +49,9 @@ export default function Navbar() {
 
         if (path === "/dashboard") {
             crumbs.push({ label: "Dashboard", path: "/dashboard" });
+        } else if (path === "/profile") {
+            crumbs.push({ label: "Dashboard", path: "/dashboard" });
+            crumbs.push({ label: "Profile", path: "/profile" });
         } else if (path.startsWith("/workspaces")) {
             crumbs.push({ label: "Dashboard", path: "/dashboard" });
             if (currentWorkspace) {
@@ -50,6 +73,12 @@ export default function Navbar() {
     };
 
     const breadcrumbs = buildBreadcrumbs();
+
+    const handleLogout = () => {
+        logout(null, {
+            onSuccess: () => navigate("/login")
+        });
+    };
 
     return (
         <header className="h-[60px] border-b border-slate-800/40 bg-slate-950/60 backdrop-blur-xl flex items-center justify-between px-6 shrink-0 relative z-10">
@@ -97,9 +126,42 @@ export default function Navbar() {
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-purple-500 rounded-full border-2 border-slate-950" />
                 </button>
 
-                {/* User avatar */}
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[11px] font-bold text-white uppercase shadow-sm cursor-pointer hover:shadow-purple-500/20 hover:shadow-md transition-shadow duration-200">
-                    {user?.name ? user.name.slice(0, 2) : "US"}
+                {/* User avatar & dropdown */}
+                <div className="relative" ref={menuRef}>
+                    <div 
+                        onClick={() => setShowUserMenu(!showUserMenu)}
+                        className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[11px] font-bold text-white uppercase shadow-sm cursor-pointer hover:shadow-purple-500/20 hover:shadow-md transition-shadow duration-200"
+                    >
+                        {user?.name ? user.name.slice(0, 2) : "US"}
+                    </div>
+
+                    {showUserMenu && (
+                        <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
+                            <div className="px-4 py-2 border-b border-slate-800 mb-1">
+                                <p className="text-[12px] font-bold text-white truncate">{user?.name}</p>
+                                <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                            </div>
+                            <Link
+                                to="/profile"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-2 px-4 py-2 text-[12px] font-semibold text-slate-300 hover:text-white hover:bg-white/[0.04] transition-colors"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                My Profile
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-2 px-4 py-2 text-[12px] font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/[0.04] transition-colors text-left"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

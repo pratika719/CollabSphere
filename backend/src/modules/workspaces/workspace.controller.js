@@ -150,12 +150,12 @@ export const removeMember = asyncHandler(async (req, res) => {
 
 export const listmembers = asyncHandler(async (req, res, next) => {
     const { workspaceId } = req.params;
-    const workspace = await workspaceService.getWorkspaceById(workspaceId);
+    const members = await workspaceService.listmembers(workspaceId);
     return res.status(200).json(
         new ApiResponse(
             200,
-            workspace,
-            "Workspace fetched successfully"
+            members,
+            "Members fetched successfully"
         )
     );
 })

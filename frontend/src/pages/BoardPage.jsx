@@ -1,12 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useTasks } from "../hooks/useTasks.js";
 import { useBoards, useArchiveBoard } from "../hooks/useBoards.js";
+import { useMoveTaskDnd } from "../hooks/useMoveTaskDnd.js";
+import { useReorderTasksDnd } from "../hooks/useReorderTasksDnd.js";
 import BoardColumn from "../components/board/BoardColumn.jsx";
 import CreateTaskModal from "../components/modals/CreateTaskModal.jsx";
 import EditBoardModal from "../components/modals/EditBoardModal.jsx";
 import TaskDetailModal from "../components/modals/TaskDetailModal.jsx";
 import ConfirmDialog from "../components/modals/ConfirmDialog.jsx";
+import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove } from "@dnd-kit/sortable";
+import TaskCard from "../components/task/TaskCard.jsx";
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,15 +39,24 @@ export default function BoardPage() {
     const [selectedTask, setSelectedTask] = useState(null);
     const [showEditBoard, setShowEditBoard] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
-
+    const [activeTask, setActiveTask] = useState(null)
+    const [activeBoard, setActiveBoard] = useState(null)
     const { data: tasksResponse, isLoading: tasksLoading } = useTasks(boardId);
     const { data: boardsResponse } = useBoards(workspaceId);
     const { mutate: archiveBoard, isPending: isArchiving } = useArchiveBoard();
+    const { mutate: moveTaskDnd } = useMoveTaskDnd();
+    const { mutate: reorderTasksDnd } = useReorderTasksDnd();
 
     const tasks = useMemo(() => tasksResponse?.data || [], [tasksResponse?.data]);
     const boards = boardsResponse?.data || [];
     const currentBoard = boards.find((b) => b._id === boardId);
-
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        })
+    );
     // Group tasks by status for Kanban columns
     const tasksByStatus = useMemo(() => {
         const grouped = {
@@ -86,6 +101,68 @@ export default function BoardPage() {
             }
         );
     };
+
+    // Helper: find which column a task belongs to
+    const findColumnForTask = useCallback((taskId) => {
+        const columnStatuses = ["todo", "in-progress", "completed"];
+        if (columnStatuses.includes(taskId)) return taskId;
+
+        for (const [status, statusTasks] of Object.entries(tasksByStatus)) {
+            if (statusTasks.some((t) => t._id === taskId)) {
+                return status;
+            }
+        }
+        return null;
+    }, [tasksByStatus]);
+
+    // DRAG START — record which task the user picked up
+    const handleDragStart = useCallback((event) => {
+        const { active } = event;
+        const task = tasks.find((t) => t._id === active.id);
+        setActiveTask(task || null);
+    }, [tasks]);
+
+    // DRAG END — handles both status change and within-column reordering
+    const handleDragEnd = useCallback((event) => {
+        const { active, over } = event;
+        setActiveTask(null);
+
+        if (!over || active.id === over.id) return;
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        const sourceColumn = findColumnForTask(activeId);
+        const destColumn = findColumnForTask(overId);
+
+        if (!sourceColumn || !destColumn) return;
+
+        if (sourceColumn === destColumn) {
+            const columnTasks = tasksByStatus[sourceColumn];
+            const oldIndex = columnTasks.findIndex((t) => t._id === activeId);
+            const newIndex = columnTasks.findIndex((t) => t._id === overId);
+
+            if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+
+            const reordered = arrayMove(columnTasks, oldIndex, newIndex);
+            const reorderedIds = reordered.map((t) => t._id);
+
+            reorderTasksDnd({
+                boardId,
+                tasks: reorderedIds,
+                reorderedTasks: reordered,
+                status: sourceColumn,
+            });
+            return;
+        }
+
+        moveTaskDnd({
+            taskId: activeId,
+            boardId,
+            updateData: { status: destColumn },
+        });
+    }, [findColumnForTask, tasksByStatus, moveTaskDnd, reorderTasksDnd, boardId]);
+
 
     const columns = [
         { title: "To Do", status: "todo" },
@@ -162,24 +239,40 @@ export default function BoardPage() {
             </div>
 
             {/* Kanban Board — Horizontal scroll */}
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2">
-                {columns.map((col) => (
-                    <BoardColumn
-                        key={col.status}
-                        title={col.title}
-                        status={col.status}
-                        tasks={tasksByStatus[col.status]}
-                        onCreateTask={handleCreateTask}
-                        onTaskClick={handleTaskClick}
-                    />
-                ))}
-            </div>
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2">
+                    {columns.map((col) => (
+                        <BoardColumn
+                            key={col.status}
+                            title={col.title}
+                            status={col.status}
+                            tasks={tasksByStatus[col.status]}
+                            onCreateTask={handleCreateTask}
+                            onTaskClick={handleTaskClick}
+                        />
+                    ))}
+                </div>
+
+                <DragOverlay dropAnimation={null}>
+                    {activeTask ? (
+                        <div className="rotate-[3deg] scale-105 pointer-events-none">
+                            <TaskCard task={activeTask} />
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
 
             {/* Create Task Modal */}
             <CreateTaskModal
                 isOpen={showCreateTask}
                 onClose={() => setShowCreateTask(false)}
                 boardId={boardId}
+                workspaceId={workspaceId}
                 defaultStatus={defaultStatus}
             />
 
@@ -189,6 +282,7 @@ export default function BoardPage() {
                 onClose={() => setSelectedTask(null)}
                 task={selectedTask}
                 boardId={boardId}
+                workspaceId={workspaceId}
             />
 
             {/* Edit Board Modal */}

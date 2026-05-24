@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useUpdateTask, useArchiveTask } from "../../hooks/useTasks.js";
+import { useWorkspaceMembers } from "../../hooks/useWorkspaces.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,7 @@ import { useUpdateTask, useArchiveTask } from "../../hooks/useTasks.js";
 |
 */
 
-export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
+export default function TaskDetailModal({ isOpen, onClose, task, boardId, workspaceId }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("medium");
@@ -30,8 +31,12 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
     const [dueDate, setDueDate] = useState("");
     const [labelInput, setLabelInput] = useState("");
     const [labels, setLabels] = useState([]);
+    const [assignee, setAssignee] = useState("");
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [prevTask, setPrevTask] = useState(null);
+
+    const { data: membersResponse } = useWorkspaceMembers(workspaceId);
+    const members = membersResponse?.data || [];
 
     const { mutate: updateTask, isPending: isUpdating } = useUpdateTask();
     const { mutate: archiveTask, isPending: isArchiving } = useArchiveTask();
@@ -45,6 +50,7 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
         setStatus(task?.status || "todo");
         setDueDate(task?.dueDate ? task.dueDate.split("T")[0] : "");
         setLabels(task?.labels || []);
+        setAssignee(task?.assignee?._id || task?.assignee || "");
         setShowArchiveConfirm(false);
     }
 
@@ -71,7 +77,8 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
         priority !== (task.priority || "medium") ||
         status !== (task.status || "todo") ||
         dueDate !== (task.dueDate ? task.dueDate.split("T")[0] : "") ||
-        JSON.stringify(labels) !== JSON.stringify(task.labels || []);
+        JSON.stringify(labels) !== JSON.stringify(task.labels || []) ||
+        assignee !== (task.assignee?._id || task.assignee || "");
 
     const handleSave = () => {
         if (!title.trim()) return;
@@ -87,6 +94,7 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
                     status,
                     dueDate: dueDate || null,
                     labels,
+                    assignee: assignee || null,
                 },
             },
             {
@@ -343,23 +351,45 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId }) {
                     </div>
 
                     {/* Metadata */}
-                    {task.assignee && (
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-800/40">
-                            <span className="text-[11px] font-medium text-slate-500">Assigned to:</span>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-[8px] font-bold text-white">
-                                    {typeof task.assignee === "object"
-                                        ? task.assignee.name?.slice(0, 2)?.toUpperCase()
+                    <div className="pt-4 border-t border-slate-800/40 grid grid-cols-2 gap-4">
+                        {/* Assignee Selector */}
+                        <div className="space-y-1.5 text-left">
+                            <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+                                Assigned To
+                            </label>
+                            <select
+                                value={assignee}
+                                onChange={(e) => setAssignee(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-[12px] font-medium focus:outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200 [color-scheme:dark]"
+                            >
+                                <option value="">Unassigned</option>
+                                {members.map((member) => (
+                                    <option key={member.user._id} value={member.user._id}>
+                                        {member.user.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Created By (Read-only) */}
+                        <div className="space-y-1.5 text-left">
+                            <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+                                Created By
+                            </label>
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800/40 text-[12px] font-medium text-slate-300">
+                                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[8px] font-bold text-white uppercase">
+                                    {task.createdBy && typeof task.createdBy === "object"
+                                        ? task.createdBy.name?.slice(0, 2)
                                         : "?"}
                                 </div>
-                                <span className="text-[12px] text-slate-300 font-medium">
-                                    {typeof task.assignee === "object"
-                                        ? task.assignee.name
+                                <span>
+                                    {task.createdBy && typeof task.createdBy === "object"
+                                        ? task.createdBy.name
                                         : "Unknown"}
                                 </span>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* Footer Actions */}

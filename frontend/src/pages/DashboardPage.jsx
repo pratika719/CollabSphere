@@ -69,7 +69,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                                 <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
                             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Team Members</p>
@@ -78,6 +78,24 @@ export default function DashboardPage() {
                             {isLoading ? "—" : workspaces.reduce((sum, ws) => sum + (ws.members?.length || 0), 0)}
                         </p>
                         <p className="text-[11px] text-indigo-400 mt-1 font-medium">Across all workspaces</p>
+                    </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-slate-800/60 p-5 rounded-2xl relative overflow-hidden group hover:border-blue-500/20 transition-all duration-300">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+                    <div className="relative">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                                </svg>
+                            </div>
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Boards</p>
+                        </div>
+                        <p className="text-3xl font-extrabold text-white">
+                            {isLoading ? "—" : workspaces.reduce((sum, ws) => sum + (ws.boardCount || 0), 0)}
+                        </p>
+                        <p className="text-[11px] text-blue-400 mt-1 font-medium">Active boards</p>
                     </div>
                 </div>
 

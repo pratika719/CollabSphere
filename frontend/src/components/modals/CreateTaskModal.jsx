@@ -1,25 +1,31 @@
 import { useState } from "react";
 import { useCreateTask } from "../../hooks/useTasks.js";
+import { useWorkspaceMembers } from "../../hooks/useWorkspaces.js";
 
 /**
  * CreateTaskModal
  *
- * Full task creation form with title, description, priority, labels, due date.
+ * Full task creation form with title, description, priority, labels, due date, and assignee.
  * Uses useMutation → invalidates task cache → closes.
  *
  * Props:
  *   isOpen: boolean
  *   onClose: function
  *   boardId: string
+ *   workspaceId: string
  *   defaultStatus: string ("todo", "in-progress", "completed")
  */
-export default function CreateTaskModal({ isOpen, onClose, boardId, defaultStatus = "todo" }) {
+export default function CreateTaskModal({ isOpen, onClose, boardId, workspaceId, defaultStatus = "todo" }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("medium");
     const [dueDate, setDueDate] = useState("");
     const [labelInput, setLabelInput] = useState("");
     const [labels, setLabels] = useState([]);
+    const [assignee, setAssignee] = useState("");
+
+    const { data: membersResponse } = useWorkspaceMembers(workspaceId);
+    const members = membersResponse?.data || [];
 
     const { mutate: createTask, isPending } = useCreateTask();
 
@@ -51,6 +57,7 @@ export default function CreateTaskModal({ isOpen, onClose, boardId, defaultStatu
         setDueDate("");
         setLabelInput("");
         setLabels([]);
+        setAssignee("");
     };
 
     const handleSubmit = (e) => {
@@ -67,6 +74,7 @@ export default function CreateTaskModal({ isOpen, onClose, boardId, defaultStatu
                 status: defaultStatus,
                 dueDate: dueDate || undefined,
                 labels: labels.length > 0 ? labels : undefined,
+                assignee: assignee || undefined,
             },
             {
                 onSuccess: () => {
@@ -145,6 +153,25 @@ export default function CreateTaskModal({ isOpen, onClose, boardId, defaultStatu
                             rows={3}
                             className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-[13px] font-medium placeholder:text-slate-600 focus:outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200 resize-none"
                         />
+                    </div>
+
+                    {/* Assignee */}
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+                            Assignee
+                        </label>
+                        <select
+                            value={assignee}
+                            onChange={(e) => setAssignee(e.target.value)}
+                            className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-[13px] font-medium focus:outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 transition-all duration-200 [color-scheme:dark]"
+                        >
+                            <option value="">Unassigned</option>
+                            {members.map((member) => (
+                                <option key={member.user._id} value={member.user._id}>
+                                    {member.user.name} ({member.user.email})
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Priority + Due Date row */}

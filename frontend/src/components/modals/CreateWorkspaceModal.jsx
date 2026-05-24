@@ -13,12 +13,14 @@ import { useCreateWorkspace } from "../../hooks/useWorkspaces.js";
 export default function CreateWorkspaceModal({ isOpen, onClose }) {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [error, setError] = useState(null);
     const { mutate: createWorkspace, isPending } = useCreateWorkspace();
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setError(null);
 
         if (!name.trim()) return;
 
@@ -30,6 +32,9 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
                     setDescription("");
                     onClose();
                 },
+                onError: (err) => {
+                    setError(err.response?.data?.message || "Failed to create workspace");
+                }
             }
         );
     };
@@ -59,6 +64,11 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    {error && (
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                            {error}
+                        </div>
+                    )}
                     <div className="space-y-1.5">
                         <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
                             Workspace Name *

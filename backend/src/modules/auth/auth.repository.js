@@ -12,7 +12,7 @@ export const finduserByEmail =
         }).select("-password");
     };
 export const findUserById = async (userId) => {
-    return await User.findById(userId).select("-password");
+    return await User.findById(userId).select("-password -refreshToken");
 }
 
 export const finduserWithpasswordByEmail = async (email) => {

@@ -11,8 +11,21 @@
 |   onTaskClick?: (task) => void
 |
 */
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-export default function TaskCard({ task, onTaskClick }) {
+export default function TaskCard({ task, onTaskClick, dragOverlay = false }) {
+
+    const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
+        id: task._id,
+        disabled: dragOverlay
+    });
+
+    const style = dragOverlay ? {} : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
     const priorityConfig = {
         high: {
             icon: (
@@ -86,9 +99,20 @@ export default function TaskCard({ task, onTaskClick }) {
 
     return (
         <div
-            onClick={() => onTaskClick?.(task)}
-            className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:border-slate-700/60 hover:bg-slate-900/80 transition-all duration-200 cursor-pointer group"
+            ref={dragOverlay ? null : setNodeRef}       // ④ Attach the measurement ref
+            style={style}          // ⑤ Apply transform + transition
+            {...(dragOverlay ? {} : attributes)}        // ⑥ Spread ARIA attributes
+            {...(dragOverlay ? {} : listeners)}         // ⑦ Spread drag event listeners
+            onClick={dragOverlay ? null : () => onTaskClick?.(task)}
+            className={`p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/50
+                hover:border-slate-700/60 hover:bg-slate-900/80
+                transition-all duration-200 cursor-grab active:cursor-grabbing group
+                ${(isDragging && !dragOverlay)
+                    ? "opacity-40 border-dashed border-purple-500/50 bg-purple-500/5 shadow-none"
+                    : ""
+                }`}
         >
+
             {/* Labels */}
             {task.labels && task.labels.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-2.5">
