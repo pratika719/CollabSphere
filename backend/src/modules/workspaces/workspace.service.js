@@ -2,6 +2,7 @@ import ApiError from "../../utils/ApiError.js";
 
 import * as workspaceRepository from "./workspace.repository.js";
 import * as authRepository from "../auth/auth.repository.js";
+import { notifyUser } from "../notifications/notification.service.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -209,6 +210,8 @@ export const inviteMember = async ({
     workspaceId,
     email,
     role = "member",
+    inviterId,
+    inviterName,
 }) => {
     /*
     |--------------------------------------------------------------------------
@@ -272,11 +275,27 @@ export const inviteMember = async ({
     |--------------------------------------------------------------------------
     */
 
-    return await workspaceRepository.addMemberToWorkspace(
+    const workspace = await workspaceRepository.addMemberToWorkspace(
         workspaceId,
         user._id,
         role
     );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notify User
+    |--------------------------------------------------------------------------
+    */
+
+    await notifyUser({
+        userId: user._id,
+        type: "WORKSPACE_INVITE",
+        message: `${inviterName} invited you to workspace "${workspace.name}"`,
+        relatedWorkspace: workspaceId,
+        triggeredBy: inviterId,
+    });
+
+    return workspace;
 };
 
 /*
@@ -291,6 +310,8 @@ export const inviteMember = async ({
 export const removeMember = async ({
     workspace,
     memberId,
+    removerId,
+    removerName,
 }) => {
     /*
     |--------------------------------------------------------------------------
@@ -334,10 +355,26 @@ export const removeMember = async ({
     |--------------------------------------------------------------------------
     */
 
-    return await workspaceRepository.removeMemberFromWorkspace(
+    const updatedWorkspace = await workspaceRepository.removeMemberFromWorkspace(
         workspace._id,
         memberId
     );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notify User
+    |--------------------------------------------------------------------------
+    */
+
+    await notifyUser({
+        userId: memberId,
+        type: "WORKSPACE_REMOVED",
+        message: `${removerName} removed you from workspace "${workspace.name}"`,
+        relatedWorkspace: workspace._id,
+        triggeredBy: removerId,
+    });
+
+    return updatedWorkspace;
 };
 
 /*

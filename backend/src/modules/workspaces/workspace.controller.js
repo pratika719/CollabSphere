@@ -90,7 +90,13 @@ export const inviteMember = asyncHandler(async (req, res, next) => {
         );
     }
 
-    const workspace = await workspaceService.inviteMember({ workspaceId, email, role });
+    const workspace = await workspaceService.inviteMember({
+        workspaceId,
+        email,
+        role,
+        inviterId: req.user._id,
+        inviterName: req.user.name,
+    });
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -136,6 +142,8 @@ export const removeMember = asyncHandler(async (req, res) => {
     const updatedWorkspace = await workspaceService.removeMember({
         workspace: req.workspace,
         memberId,
+        removerId: req.user._id,
+        removerName: req.user.name,
     });
 
     return res.status(200).json(
