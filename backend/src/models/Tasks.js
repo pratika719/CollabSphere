@@ -60,9 +60,36 @@ const taskSchema = new mongoose.Schema({
     },
     attachments: [
         {
-            type: String,
-
-        }
+            url: {
+                type: String,
+                required: true,
+            },
+            publicId: {
+                type: String,
+                required: true,
+            },
+            filename: {
+                type: String,
+                required: true,
+            },
+            mimetype: {
+                type: String,
+                required: true,
+            },
+            size: {
+                type: Number, // bytes
+                required: true,
+            },
+            uploadedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+                required: true,
+            },
+            uploadedAt: {
+                type: Date,
+                default: Date.now,
+            },
+        },
     ],
 
     labels: [

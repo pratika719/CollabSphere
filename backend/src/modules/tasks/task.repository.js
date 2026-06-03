@@ -168,3 +168,36 @@ export const countFilteredTasks = async (filters) => {
 export const deleteTaskPermanently = async (taskId) => {
     return await Task.findByIdAndDelete(taskId);
 };
+
+// ---------------------------------------------------------------------------
+// Attachment helpers (used by the upload module)
+// ---------------------------------------------------------------------------
+
+/**
+ * Atomically push one or more attachment subdocuments into a task.
+ * Uses $push + $each for batch insert in a single DB operation.
+ */
+export const addAttachments = async (taskId, attachments) => {
+    return await Task.findByIdAndUpdate(
+        taskId,
+        { $push: { attachments: { $each: attachments } } },
+        { new: true }
+    )
+    .populate("assignee", "name email avatar")
+    .populate("createdBy", "name email avatar")
+    .populate("attachments.uploadedBy", "name email avatar");
+};
+
+/**
+ * Remove a single attachment subdocument by its _id.
+ * Uses $pull for atomic removal without affecting other attachments.
+ */
+export const removeAttachment = async (taskId, attachmentId) => {
+    return await Task.findByIdAndUpdate(
+        taskId,
+        { $pull: { attachments: { _id: attachmentId } } },
+        { new: true }
+    )
+    .populate("assignee", "name email avatar")
+    .populate("createdBy", "name email avatar");
+};

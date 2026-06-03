@@ -7,6 +7,7 @@ import {
     getOnlineUsersForWorkspace,
     removeWorkspacePresence,
 } from "./socket.presence.js";
+import { wrapSocketHandler } from "./socket.handler.js";
 
 export const emitOnlineUsers = (io, workspaceId) => {
     io.to(workspaceRoom(workspaceId)).emit(
@@ -19,8 +20,9 @@ export const emitOnlineUsers = (io, workspaceId) => {
 };
 
 export const registerWorkspaceHandlers = (io, socket) => {
-    socket.on(SOCKET_EVENTS.WORKSPACE_JOIN, async ({ workspaceId } = {}) => {
-        try {
+    socket.on(
+        SOCKET_EVENTS.WORKSPACE_JOIN,
+        wrapSocketHandler(io, socket, async (io, socket, { workspaceId } = {}) => {
             if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
                 socket.emit(SOCKET_EVENTS.WORKSPACE_ERROR, {
                     workspaceId,
@@ -55,31 +57,29 @@ export const registerWorkspaceHandlers = (io, socket) => {
             });
 
             emitOnlineUsers(io, workspaceId);
-        } catch {
-            socket.emit(SOCKET_EVENTS.WORKSPACE_ERROR, {
+        })
+    );
+
+    socket.on(
+        SOCKET_EVENTS.WORKSPACE_LEAVE,
+        wrapSocketHandler(io, socket, async (io, socket, { workspaceId } = {}) => {
+            if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+                return;
+            }
+
+            socket.leave(workspaceRoom(workspaceId));
+
+            removeWorkspacePresence({
                 workspaceId,
-                message: "Failed to join workspace",
+                userId: socket.user._id,
+                socketId: socket.id,
             });
-        }
-    });
 
-    socket.on(SOCKET_EVENTS.WORKSPACE_LEAVE, ({ workspaceId } = {}) => {
-        if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
-            return;
-        }
+            socket.emit(SOCKET_EVENTS.WORKSPACE_LEFT, {
+                workspaceId,
+            });
 
-        socket.leave(workspaceRoom(workspaceId));
-
-        removeWorkspacePresence({
-            workspaceId,
-            userId: socket.user._id,
-            socketId: socket.id,
-        });
-
-        socket.emit(SOCKET_EVENTS.WORKSPACE_LEFT, {
-            workspaceId,
-        });
-
-        emitOnlineUsers(io, workspaceId);
-    });
+            emitOnlineUsers(io, workspaceId);
+        })
+    );
 };

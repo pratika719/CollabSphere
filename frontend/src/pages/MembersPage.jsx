@@ -4,6 +4,9 @@ import useWorkspaceStore from "../store/workspace.store.js";
 import { useWorkspace, useInviteMember, useRemoveMember, useUpdateMemberRole } from "../hooks/useWorkspaces.js";
 import useAuthStore from "../store/auth.store.js";
 import ConfirmDialog from "../components/modals/ConfirmDialog.jsx";
+import { useOnlineUsers } from "../realtime/useOnlineUsers.js";
+import { useWorkspaceSocket } from "../realtime/useWorkspaceSocket.js";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,9 @@ export default function MembersPage() {
     const { workspaceId } = useParams();
     const { setCurrentWorkspace } = useWorkspaceStore();
     const { user: currentUser } = useAuthStore();
+
+    useWorkspaceSocket(workspaceId);
+    const { onlineUserIds } = useOnlineUsers(workspaceId);
 
     // Sync workspace selection
     useEffect(() => {
@@ -209,6 +215,7 @@ export default function MembersPage() {
                     const memberRole = member.role || "member";
                     const isOwner = workspace?.owner?.toString() === memberId?.toString();
                     const isCurrentUser = currentUser?._id?.toString() === memberId?.toString();
+                    const isOnline = onlineUserIds.has(memberId?.toString());
 
                     return (
                         <div
@@ -216,9 +223,12 @@ export default function MembersPage() {
                             className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-slate-800/60 hover:border-slate-700/60 hover:bg-white/[0.03] transition-all duration-200 group"
                         >
                             {/* Avatar */}
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-sm font-bold text-white shadow-md shrink-0 uppercase">
-                                {memberName?.slice(0, 2) || "?"}
-                            </div>
+                            <UserAvatar 
+                                user={memberUser} 
+                                size="w-10 h-10" 
+                                fontSize="text-sm" 
+                                className={isOnline ? "ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-slate-950" : ""}
+                            />
 
                             {/* Name & Email */}
                             <div className="flex-1 min-w-0">
@@ -229,6 +239,11 @@ export default function MembersPage() {
                                     {isCurrentUser && (
                                         <span className="text-[9px] font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
                                             YOU
+                                        </span>
+                                    )}
+                                    {isOnline && (
+                                        <span className="text-[9px] font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                                            ONLINE
                                         </span>
                                     )}
                                 </div>

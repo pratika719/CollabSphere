@@ -61,6 +61,26 @@ export const updateAvatar = async (UserId, avatarUrl) => {
 
 }
 
+/**
+ * Update both avatar URL and Cloudinary publicId.
+ * Used by the upload controller to track files for cleanup.
+ */
+export const updateUserAvatar = async (userId, avatarUrl, avatarPublicId) => {
+    return await User.findByIdAndUpdate(
+        userId,
+        { avatar: avatarUrl, avatarPublicId },
+        { new: true }
+    ).select("-password -refreshToken");
+};
+
+/**
+ * Fetch user WITH the hidden avatarPublicId field.
+ * Needed to delete the old avatar from Cloudinary before uploading a new one.
+ */
+export const findUserWithAvatar = async (userId) => {
+    return await User.findById(userId).select("+avatarPublicId");
+};
+
 
 export const emailExists = async (email) => {
     const user = await User.exists({ email });
@@ -84,6 +104,8 @@ export default {
     removeRefreshToken,
     updatePassword,
     updateAvatar,
+    updateUserAvatar,
+    findUserWithAvatar,
     emailExists,
     deleteUserById,
 };

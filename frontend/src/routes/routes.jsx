@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute.jsx";
@@ -5,6 +6,7 @@ import PublicRoute from "./PublicRoute.jsx";
 import AuthLayout from "../components/layout/AuthLayout.jsx";
 import AppLayout from "../components/layout/AppLayout.jsx";
 import GlobalError from "../components/layout/GlobalError.jsx";
+import ErrorBoundary from "../components/common/ErrorBoundary.jsx";
 
 const LoginPage = lazy(() => import("../features/auth/pages/LoginPage.jsx"));
 const RegisterPage = lazy(() => import("../features/auth/pages/RegisterPage.jsx"));
@@ -22,9 +24,11 @@ const PageLoader = () => (
 );
 
 const withSuspense = (Component) => (
-    <Suspense fallback={<PageLoader />}>
-        <Component />
-    </Suspense>
+    <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+            <Component />
+        </Suspense>
+    </ErrorBoundary>
 );
 
 /*

@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import useAuthStore from "../store/auth.store.js";
+import SocketProvider from "../realtime/SocketProvider.jsx";
+import ToastContainer from "../components/common/Toast.jsx";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -20,7 +22,10 @@ export default function Providers({ children }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            {children}
+            <SocketProvider>
+                {children}
+                <ToastContainer />
+            </SocketProvider>
         </QueryClientProvider>
     );
 }

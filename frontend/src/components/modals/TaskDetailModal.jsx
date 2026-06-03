@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUpdateTask, useArchiveTask } from "../../hooks/useTasks.js";
 import { useWorkspaceMembers } from "../../hooks/useWorkspaces.js";
+import AttachmentUpload from "../upload/AttachmentUpload.jsx";
+import UserAvatar from "../common/UserAvatar.jsx";
 
 /*
 |--------------------------------------------------------------------------
@@ -350,6 +352,13 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId, worksp
                         )}
                     </div>
 
+                    {/* Attachments */}
+                    <AttachmentUpload
+                        taskId={task._id}
+                        boardId={boardId}
+                        attachments={task.attachments || []}
+                    />
+
                     {/* Metadata */}
                     <div className="pt-4 border-t border-slate-800/40 grid grid-cols-2 gap-4">
                         {/* Assignee Selector */}
@@ -377,11 +386,11 @@ export default function TaskDetailModal({ isOpen, onClose, task, boardId, worksp
                                 Created By
                             </label>
                             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800/40 text-[12px] font-medium text-slate-300">
-                                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[8px] font-bold text-white uppercase">
-                                    {task.createdBy && typeof task.createdBy === "object"
-                                        ? task.createdBy.name?.slice(0, 2)
-                                        : "?"}
-                                </div>
+                                <UserAvatar 
+                                    user={task.createdBy && typeof task.createdBy === "object" ? task.createdBy : { name: "?" }} 
+                                    size="w-5 h-5" 
+                                    fontSize="text-[8px]"
+                                />
                                 <span>
                                     {task.createdBy && typeof task.createdBy === "object"
                                         ? task.createdBy.name

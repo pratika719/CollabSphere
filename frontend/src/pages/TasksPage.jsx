@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import useWorkspaceStore from "../store/workspace.store.js";
 import { useWorkspace } from "../hooks/useWorkspaces.js";
 import { useFilteredTasks } from "../hooks/useTasks.js";
+import { useRealtimeTasks } from "../realtime/useRealtimeTasks.js";
+import { useWorkspaceSocket } from "../realtime/useWorkspaceSocket.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +25,9 @@ import { useFilteredTasks } from "../hooks/useTasks.js";
 export default function TasksPage() {
     const { workspaceId } = useParams();
     const { setCurrentWorkspace } = useWorkspaceStore();
+
+    useWorkspaceSocket(workspaceId);
+    useRealtimeTasks(workspaceId);
 
     // Sync workspace selection
     useEffect(() => {

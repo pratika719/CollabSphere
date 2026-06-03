@@ -12,6 +12,8 @@ import ConfirmDialog from "../components/modals/ConfirmDialog.jsx";
 import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from "@dnd-kit/sortable";
 import TaskCard from "../components/task/TaskCard.jsx";
+import { useRealtimeTasks } from "../realtime/useRealtimeTasks.js";
+import { useWorkspaceSocket } from "../realtime/useWorkspaceSocket.js";
 
 
 /*
@@ -40,12 +42,14 @@ export default function BoardPage() {
     const [showEditBoard, setShowEditBoard] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [activeTask, setActiveTask] = useState(null)
-    const [activeBoard, setActiveBoard] = useState(null)
     const { data: tasksResponse, isLoading: tasksLoading } = useTasks(boardId);
     const { data: boardsResponse } = useBoards(workspaceId);
     const { mutate: archiveBoard, isPending: isArchiving } = useArchiveBoard();
     const { mutate: moveTaskDnd } = useMoveTaskDnd();
     const { mutate: reorderTasksDnd } = useReorderTasksDnd();
+
+    useWorkspaceSocket(workspaceId);
+    useRealtimeTasks(workspaceId);
 
     const tasks = useMemo(() => tasksResponse?.data || [], [tasksResponse?.data]);
     const boards = boardsResponse?.data || [];

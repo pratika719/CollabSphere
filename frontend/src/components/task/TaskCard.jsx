@@ -13,6 +13,7 @@
 */
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import UserAvatar from "../common/UserAvatar.jsx";
 
 export default function TaskCard({ task, onTaskClick, dragOverlay = false }) {
 
@@ -91,12 +92,6 @@ export default function TaskCard({ task, onTaskClick, dragOverlay = false }) {
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     };
 
-    const getAssigneeInitials = () => {
-        if (!task.assignee) return null;
-        if (typeof task.assignee === "string") return "?";
-        return task.assignee.name?.slice(0, 2)?.toUpperCase() || "?";
-    };
-
     return (
         <div
             ref={dragOverlay ? null : setNodeRef}       // ④ Attach the measurement ref
@@ -160,10 +155,12 @@ export default function TaskCard({ task, onTaskClick, dragOverlay = false }) {
                 </div>
 
                 {/* Assignee avatar */}
-                {getAssigneeInitials() && (
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-[8px] font-bold text-white">
-                        {getAssigneeInitials()}
-                    </div>
+                {task.assignee && (
+                    <UserAvatar 
+                        user={typeof task.assignee === 'string' ? { name: '?' } : task.assignee} 
+                        size="w-6 h-6" 
+                        fontSize="text-[8px]"
+                    />
                 )}
             </div>
         </div>

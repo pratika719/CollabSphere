@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    avatarPublicId: {
+        type: String,
+        default: null,
+        select: false, // internal — only needed for Cloudinary cleanup
+    },
     bio: {
         type: String,
         trim: true,

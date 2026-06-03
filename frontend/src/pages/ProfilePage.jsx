@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useAuthStore from "../store/auth.store.js";
 import { changePassword } from "../services/auth.api.js";
+import AvatarUpload from "../components/upload/AvatarUpload.jsx";
 
 export default function ProfilePage() {
     const { user } = useAuthStore();
@@ -48,9 +49,10 @@ export default function ProfilePage() {
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-32 -mb-32" />
                 
                 <div className="relative flex flex-col md:flex-row items-center gap-8">
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-3xl font-bold text-white shadow-xl shadow-purple-500/20">
-                        {user?.name?.slice(0, 2).toUpperCase() || "US"}
-                    </div>
+                    <AvatarUpload
+                        currentAvatar={user?.avatar}
+                        userName={user?.name}
+                    />
                     <div className="text-center md:text-left space-y-2">
                         <h1 className="text-3xl font-extrabold text-white">{user?.name}</h1>
                         <p className="text-slate-400 font-medium flex items-center justify-center md:justify-start gap-2">

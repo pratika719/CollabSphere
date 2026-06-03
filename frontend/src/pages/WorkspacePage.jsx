@@ -7,6 +7,7 @@ import BoardCard from "../components/board/BoardCard.jsx";
 import CreateBoardModal from "../components/modals/CreateBoardModal.jsx";
 import EditWorkspaceModal from "../components/modals/EditWorkspaceModal.jsx";
 import ConfirmDialog from "../components/modals/ConfirmDialog.jsx";
+import { useWorkspaceSocket } from "../realtime/useWorkspaceSocket.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,8 @@ export default function WorkspacePage() {
     const { data: workspaceResponse, isLoading: wsLoading } = useWorkspace(workspaceId);
     const { data: boardsResponse, isLoading: boardsLoading } = useBoards(workspaceId);
     const { mutate: archiveWorkspace, isPending: isArchiving } = useArchiveWorkspace();
+
+    useWorkspaceSocket(workspaceId);
 
     const workspace = workspaceResponse?.data;
     const boards = boardsResponse?.data || [];

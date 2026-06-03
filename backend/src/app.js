@@ -7,6 +7,7 @@ import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
 import boardRoutes from "./modules/boards/board.routes.js";
 import taskRoutes from "./modules/tasks/task.routes.js";
 import notificationRoutes from "./modules/notifications/notification.routes.js";
+import uploadRoutes from "./modules/uploads/upload.routes.js";
 
 
 
@@ -17,7 +18,7 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
 
 app.use(cookieParser());
 
@@ -31,6 +32,7 @@ app.use("/api/v1/workspaces", workspaceRoutes);
 app.use("/api/v1/boards", boardRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/uploads", uploadRoutes);
 
 
 

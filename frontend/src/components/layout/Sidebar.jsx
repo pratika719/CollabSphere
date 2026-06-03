@@ -3,6 +3,7 @@ import useAuthStore from "../../store/auth.store.js";
 import useLogout from "../../hooks/useLogout.js";
 import useWorkspaceStore from "../../store/workspace.store.js";
 import WorkspaceSwitcher from "./WorkspaceSwitcher.jsx";
+import UserAvatar from "../common/UserAvatar.jsx";
 
 /*
 |--------------------------------------------------------------------------
@@ -161,9 +162,11 @@ export default function Sidebar() {
             <div className="p-3 border-t border-slate-800/60">
                 <div className="flex items-center gap-3 px-3 py-2 mb-2">
                     {/* Profile Avatar */}
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white text-xs shadow-md uppercase shrink-0">
-                        {user?.name ? user.name.slice(0, 2) : "US"}
-                    </div>
+                    <UserAvatar 
+                        user={user} 
+                        size="w-9 h-9" 
+                        fontSize="text-xs"
+                    />
                     <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-white truncate capitalize">
                             {user?.name || "User"}

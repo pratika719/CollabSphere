@@ -25,7 +25,7 @@ export function useReorderTasksDnd() {
             reorderTasks(boardId, tasks),
 
         // ① onMutate: optimistically reorder the cache
-        onMutate: async ({ boardId, reorderedTasks, status }) => {
+        onMutate: async ({ boardId, reorderedTasks }) => {
             await queryClient.cancelQueries({
                 queryKey: ["tasks", boardId],
             });
